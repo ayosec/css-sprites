@@ -3,7 +3,7 @@
 TemplatesDir = File.join(File.dirname(__FILE__), "templates")
 
 [
-    [ "blank.gif", "public/images" ]
+    [ "blank.gif", "public/images" ],
     [ "css-sprites.yml", "config" ]
 ].each do |source, dest|
 
@@ -13,4 +13,4 @@ TemplatesDir = File.join(File.dirname(__FILE__), "templates")
         FileUtils.cp(File.join(TemplatesDir, source), dest)
     end
 
-}
+end
