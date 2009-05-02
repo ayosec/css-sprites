@@ -1,0 +1,9 @@
+file-bundle: css-sprites-image-bundle
+max-width: 100
+max-height: 100
+background: blank.gif
+files:
+    - **/*.png
+    - **/*.gif
+    - **/*.jpeg
+    - **/*.jpg

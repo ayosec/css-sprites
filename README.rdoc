@@ -1,0 +1,77 @@
+= CssSprites - A Rails plugin for generate CSS sprites
+
+This plugin helps to generate CSS sprites with the images of the
+<tt>public/images/</tt> directory.
+
+
+== Installation
+
+    $ script/plugin install git://github.com/setepo/css-sprites
+
+The installer will copy <tt>blank.gif</tt> in <tt>public/images</tt>, and a
+configuration file in <tt>config/</tt>. Before copy the files it checks if there is any
+file with the same name, and will not override existing files.
+
+
+== Usage
+
+You don't need to change your code.
+
+The first step is generate the index:
+
+    $ rake css_sprites:update
+
+This will find all the images and make a bundle with them. Animated images
+(like GIF or APNG with two or more frames) are always excluded.
+
+The plugin will create one image per format (a file with JPEG images, another
+file with PNGs, ...).
+
+And that is all.
+
+When you use <tt>image_tag</tt> in your views, the plugin will check if the
+requested image is available in the index, and, if it is found, generate
+something like this:
+
+    <img alt="Some text" height="16" src="/images/blank.gif?12345678" style="background: url(/images/css-sprites-image-bundle.png?12345678) -0px -466px; " width="16" />
+
+This HTML is generated with the original <tt>image_tag</tt>, so all the Rails
+features (like assets, timestamp suffix, URL prefix) are available.
+
+If you don't want to use sprites, just remove the generated bundles.
+
+The plugin doesn't check the timestamps, so you have to call <tt>rake
+css_sprites:update</tt> again when you modify the images of the index, or you want
+to add new images.  The bundles are generated from scratch, so if you remove
+images, they will disappear from the bundles after <tt>rake
+css_sprites:update</tt>
+
+== Example configuration
+
+The initial configuration is this:
+
+    max-width: 100
+    max-height: 100
+    background: blank.gif
+    file-bundle: css-sprites-image-bundle
+    files:
+        - **/*.png
+        - **/*.gif
+        - **/*.jpeg
+        - **/*.jpg
+
+The most interesting key is <tt>files</tt>: with it, you can specify what files
+do you want to add to the index. By default it includes all the most common
+files, recursively. Take a look to <tt>Dir.glob</tt> documentation if you want to know
+the details of the patterns.
+
+== Dependencies
+
+* RMagick
+
+== TODO
+
+* Tests
+
+
+Copyright (C) 2009 Ayose Cazorla, released under the MIT license
