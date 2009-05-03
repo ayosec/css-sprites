@@ -2,6 +2,7 @@ file-bundle: css-sprites-image-bundle
 max-width: 100
 max-height: 100
 background: blank.gif
+max-files-per-bundle: 75
 files:
     - **/*.png
     - **/*.gif

@@ -54,6 +54,7 @@ The initial configuration is this:
     max-height: 100
     background: blank.gif
     file-bundle: css-sprites-image-bundle
+    max-files-per-bundle: 75
     files:
         - **/*.png
         - **/*.gif

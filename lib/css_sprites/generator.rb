@@ -5,6 +5,47 @@ module CSSSprites
     module Generator
         extend self
 
+        class BundleFile
+            cattr_accessor :file_count
+            self.file_count = 0
+
+            attr_accessor :file_name, :y
+
+            def initialize(mimetype)
+                @suffix = mimetype.gsub(/^.*\W/, '')
+                new
+            end
+
+            def new
+                close if @draw
+                @draw = Magick::Draw.new
+                @image_count = @width = @height = @y = 0
+
+                self.class.file_count += 1
+                @file_name = "#{CSSSprites.config["file-bundle"] || "css-sprites-image-bundle"}-#{self.class.file_count}.#{@suffix}"
+            end
+
+            def close
+                bundle = Magick::Image.new(@width, @height) {|image| image.background_color = "#000f" }
+
+                @draw.draw bundle
+                bundle.write(File.join(RAILS_ROOT, "public", "images", file_name))
+
+                @draw = nil
+            end
+
+            def add(image)
+                new if @image_count > (CSSSprites.config["max-files-per-bundle"] || 75)
+                @width = image.columns if image.columns > @width
+                @height += image.rows
+
+                @draw.composite 0, @y, 0, 0, image
+                @y += image.rows
+                @image_count += 1
+            end
+
+        end
+
         def update!
             config = CSSSprites.read_config
 
@@ -17,39 +58,25 @@ module CSSSprites
             index = {}
 
             # Render the bundle
-            bundle_dirname = File.join(RAILS_ROOT, "public", "images")
-            bundle_filename = config["file-bundle"] || "css-sprites-image-bundle"
 
-            image_types.each_pair {|mimetype, images|
+            image_types.each_pair do |mimetype, images|
                 puts "Generating bundle for #{mimetype} (#{images.size} images)"
-                full_file_name = bundle_filename + "." + mimetype.gsub(/^.*\W/, '')
 
-                # Compute the size for the bundle
-                width, height = 0, 0
-                images.each {|file_image, image|
-                    width = image.columns if image.columns > width
-                    height += image.rows
-                }
-
-                # Copy every image in the bundle
-                draw, y = Magick::Draw.new, 0
-                images.each {|file_image, image|
+                bundle = BundleFile.new(mimetype)
+                images.each do |file_image, image|
                     index[file_image] = {
                         :x => 0,
-                        :y => y,
+                        :y => bundle.y,
                         :width => image.columns,
                         :height => image.rows,
-                        :bundle => full_file_name
+                        :bundle => bundle.file_name
                     }
 
-                    draw.composite 0, y, 0, 0, image
-                    y += image.rows
-                }
+                    bundle.add image
+                end
 
-                bundle = Magick::Image.new(width, height) {|i| i.background_color = "#000f" }
-                draw.draw bundle
-                bundle.write(File.join(bundle_dirname, full_file_name))
-            }
+                bundle.close
+            end
 
             # Dump the index
             File.open(CSSSprites::IndexFileName, "w") {|f| f.write Marshal.dump(index) }
