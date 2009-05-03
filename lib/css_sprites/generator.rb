@@ -49,6 +49,20 @@ module CSSSprites
         def update!
             config = CSSSprites.read_config
 
+            if File.exist?(CSSSprites::IndexFileName)
+                index = (Marshal.load(File.read(CSSSprites::IndexFileName)) rescue {})
+
+                bundles = []
+                index.each_value do |item|
+                    bundles << item[:bundle]
+                end
+
+                bundles.uniq!.each do |file|
+                    file = File.join(RAILS_ROOT, "public", "images", file)
+                    File.delete(file) if File.exist?(file)
+                end
+            end
+
             # Find all the images
             image_types = find_images(:max_width => (config["max-width"] || 100).to_i,
                                       :max_height => (config["max-height"] || 100).to_i,
