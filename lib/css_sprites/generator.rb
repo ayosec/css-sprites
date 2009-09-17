@@ -26,7 +26,7 @@ module CSSSprites
             end
 
             def close
-                bundle = Magick::Image.new(@width, @height) {|image| image.background_color = "#000f" }
+                bundle = Magick::Image.new(@width, @height) {|image| image.background_color = CSSSprites.config["background-color"] || "#ffff" }
 
                 @draw.draw bundle
                 bundle.write(File.join(RAILS_ROOT, "public", "images", file_name))
@@ -57,7 +57,7 @@ module CSSSprites
                     bundles << item[:bundle]
                 end
 
-                bundles.uniq!.each do |file|
+                bundles.uniq.each do |file|
                     file = File.join(RAILS_ROOT, "public", "images", file)
                     File.delete(file) if File.exist?(file)
                 end
